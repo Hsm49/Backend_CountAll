@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors'
 import router from './routes/router'
 import db from './config/db'
 import colors from 'colors'
@@ -22,6 +23,12 @@ const server = express()
 
 // Leer datos de formularios
 server.use(express.json())
+
+// Permitir CORS
+server.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+}))
 
 // Manejo de rutas
 server.use('/api', router)

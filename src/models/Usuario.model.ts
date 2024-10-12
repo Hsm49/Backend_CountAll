@@ -1,4 +1,5 @@
 import {Table, Column, Model, DataType, Default } from 'sequelize-typescript'
+import { generarTokenAleatorio } from '../helpers/functions'
 
 @Table({
     tableName: 'usuario'
@@ -25,6 +26,12 @@ class Usuario extends Model {
         type: DataType.INTEGER()
     })
     acumulado_usuario: number
+
+    @Default(generarTokenAleatorio)
+    @Column({
+        type: DataType.STRING(10)
+    })
+    token_usuario: string
 
     @Default(false)
     @Column({
