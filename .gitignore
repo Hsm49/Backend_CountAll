@@ -1,5 +1,5 @@
 node_modules/
 dist/
-resources/diagrams/
-resources/boot/boot.png
+src/resources/diagrams/
+src/resources/boot/boot.png
 .env
