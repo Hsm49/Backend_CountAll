@@ -54,6 +54,7 @@ const registrarUsuario = async (req, res) => {
             msg: 'Se ha enviado un correo de confirmación'
         })
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: 'Error al crear el usuario' })
     }
 }
@@ -200,7 +201,7 @@ const restablecerPassword = async (req, res) => {
         );
 
         res.json({
-            msg: 'Contraseña reestablecida'
+            msg: 'Contraseña restablecida'
         })
     } catch (error) {
         res.status(500).json({

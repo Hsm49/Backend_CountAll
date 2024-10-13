@@ -1,31 +1,35 @@
-import {Table, Column, Model, DataType, Default } from 'sequelize-typescript'
+import { Table, Column, Model, DataType, HasMany, Default, AutoIncrement } from 'sequelize-typescript';
 import { generarTokenAleatorio } from '../helpers/functions'
+import UsuarioEquipo from './UsuarioEquipo.model';
+import UsuarioTarea from './UsuarioTarea.model';
+import UsuarioRecompensa from './UsuarioRecompensa.model';
+import Clasificacion from './Clasificacion.model';
 
 @Table({
     tableName: 'usuario'
 })
-
 class Usuario extends Model {
     @Column({
-        type: DataType.STRING(100)
+        type: DataType.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
     })
-    nombre_usuario: string
+    id_usuario: number;
 
     @Column({
-        type: DataType.STRING(100)
+        type: DataType.STRING(256)
     })
-    email_usuario: string
+    nombre_usuario: string;
 
     @Column({
-        type: DataType.STRING(100)
+        type: DataType.STRING(256)
     })
-    password_usuario: string
+    email_usuario: string;
 
-    @Default(0)
     @Column({
-        type: DataType.INTEGER()
+        type: DataType.STRING(256)
     })
-    acumulado_usuario: number
+    password_usuario: string;
 
     @Default(generarTokenAleatorio)
     @Column({
@@ -33,11 +37,29 @@ class Usuario extends Model {
     })
     token_usuario: string
 
+    @Default(0)
+    @Column({
+        type: DataType.INTEGER
+    })
+    puntuacion_global: number
+
     @Default(false)
     @Column({
         type: DataType.BOOLEAN
     })
     is_confirmed: boolean
+
+    @HasMany(() => UsuarioEquipo)
+    usuarioEquipos: UsuarioEquipo[];
+
+    @HasMany(() => UsuarioTarea)
+    usuarioTareas: UsuarioTarea[];
+
+    @HasMany(() => UsuarioRecompensa)
+    usuarioRecompensas: UsuarioRecompensa[];
+
+    @HasMany(() => Clasificacion)
+    clasificaciones: Clasificacion[];
 }
 
-export default Usuario
+export default Usuario;
