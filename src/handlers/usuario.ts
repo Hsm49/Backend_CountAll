@@ -210,7 +210,8 @@ const restablecerPassword = async (req, res) => {
     }
 }
 
-export { registrarUsuario,
+export { 
+    registrarUsuario,
     iniciarSesion,
     confirmarUsuario,
     olvidePassword,

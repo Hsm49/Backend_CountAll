@@ -1,9 +1,10 @@
-import { Table, Column, Model, DataType, HasMany, Default, AutoIncrement } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, HasMany, Default } from 'sequelize-typescript';
 import { generarTokenAleatorio } from '../helpers/functions'
 import UsuarioEquipo from './UsuarioEquipo.model';
 import UsuarioTarea from './UsuarioTarea.model';
 import UsuarioRecompensa from './UsuarioRecompensa.model';
 import Clasificacion from './Clasificacion.model';
+import Proyecto from './Proyecto.model';
 
 @Table({
     tableName: 'usuario'
@@ -60,6 +61,9 @@ class Usuario extends Model {
 
     @HasMany(() => Clasificacion)
     clasificaciones: Clasificacion[];
+
+    @HasMany(() => Proyecto)
+    proyectos: Proyecto[];
 }
 
 export default Usuario;
