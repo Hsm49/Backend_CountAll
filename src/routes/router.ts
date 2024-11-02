@@ -17,6 +17,10 @@ import {
     crearProyecto,
     proporcionarDetalles
 } from '../handlers/proyecto'
+/* Funciones para Clasificación */
+import {
+    getClasificaciones
+} from '../handlers/clasificacion';
 
 const router = Router()
 
@@ -36,5 +40,14 @@ router.get('/proyecto/misProyectos/:nombre_proyecto', checkAuth, verProyecto)
 // Creación del proyecto
 router.post('/proyecto/crearProyecto', checkAuth, crearProyecto)
 router.post('/proyecto/crearProyecto/:nombre_proyecto', checkAuth, proporcionarDetalles)
+
+/* Clasificación */
+// Visualizar clasificaciones
+router.get('/clasificaciones', checkAuth, getClasificaciones);
+
+/* Auth Check */
+router.get('/auth/check', checkAuth, (req, res) => {
+    res.status(200).json({ msg: 'Authenticated' });
+  });
 
 export default router

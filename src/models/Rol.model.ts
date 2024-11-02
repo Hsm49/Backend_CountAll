@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import Usuario from './Usuario.model';
 import Equipo from './Equipo.model';
 
@@ -22,6 +22,12 @@ class Rol extends Model {
         type: DataType.INTEGER
     })
     id_equipo_fk_rol: number;
+
+    @BelongsTo(() => Usuario)
+    usuario: Usuario;
+
+    @BelongsTo(() => Equipo)
+    equipo: Equipo;
 }
 
 export default Rol;
