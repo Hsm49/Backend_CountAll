@@ -11,7 +11,9 @@ import { emailRegistro } from '../helpers/emails'
 
 const registrarUsuario = async (req, res) => {
     // Validación de la integridad de los datos
-    await check('nombre_usuario').notEmpty().withMessage('Nombre de usuario vacío').run(req)
+    await check('name_usuario').notEmpty().withMessage('Nombre de usuario vacío').run(req)
+    await check('surname_usuario').notEmpty().withMessage('Nombre de usuario vacío').run(req)
+    await check('nombre_usuario').notEmpty().withMessage('Nombre de usuario vacío').matches(/^[a-zA-Z0-9]+$/).withMessage('El nombre de usuario solo puede contener letras y números').run(req)
     await check('email_usuario').notEmpty().withMessage('Correo electrónico vacío').isEmail().withMessage('Correo electrónico no válido').run(req)
     await check('password_usuario').notEmpty().withMessage('Contraseña vacía').run(req)
 
@@ -22,18 +24,24 @@ const registrarUsuario = async (req, res) => {
     }
 
     // Verificar si el correo electrónico ya existe
-    const existingUser = await Usuario.findOne({ where: { email_usuario: req.body.email_usuario } })
+    let existingUser = await Usuario.findOne({ where: { email_usuario: req.body.email_usuario } })
     if (existingUser) {
         return res.status(400).json({ errors: [{ msg: 'El correo electrónico ya está en uso' }] })
     }
 
+    // Verificar si el username ya existe
+    existingUser = await Usuario.findOne({ where: { nombre_usuario: req.body.nombre_usuario } })
+    if (existingUser) {
+        return res.status(400).json({ errors: [{ msg: 'Este username ya está en uso' }] })
+    }
+
     try {
         // Hash de la contraseña
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(req.body.password_usuario, salt);
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(req.body.password_usuario, salt)
 
         // Guardar usuario en la BD
-        const usuario = await Usuario.create({ ...req.body, password_usuario: hashedPassword });
+        const usuario = await Usuario.create({ ...req.body, password_usuario: hashedPassword })
         
         // Enviamos el correo de confirmación
         if (usuario) {
@@ -43,7 +51,7 @@ const registrarUsuario = async (req, res) => {
                     email_usuario: usuario.dataValues.email_usuario,
                     nombre_usuario: usuario.dataValues.nombre_usuario,
                     token_usuario: usuario.dataValues.token_usuario
-                });
+                })
             } catch (error) {
                 res.status(500).json({ error: 'Hubo un error al enviar el correo de confirmación' })
             }
@@ -77,13 +85,13 @@ const iniciarSesion = async (req, res) => {
     }
 
     // Comparar la contraseña proporcionada con la hasheada
-    const validPassword = await bcrypt.compare(req.body.password_usuario, existingUser.dataValues.password_usuario);
+    const validPassword = await bcrypt.compare(req.body.password_usuario, existingUser.dataValues.password_usuario)
     if (!validPassword) {
         return res.status(400).json({ errors: [{ msg: 'Contraseña incorrecta' }] })
     }
 
     // Verificamos que el usuario esté confirmado
-    const isConfirmed = existingUser.dataValues.is_confirmed;
+    const isConfirmed = existingUser.dataValues.is_confirmed
     if (!isConfirmed) {
         return res.status(400).json({ errors: [{ msg: 'El usuario no ha sido confirmado' }] })
     }
@@ -117,7 +125,7 @@ const confirmarUsuario = async (req, res) => {
         await Usuario.update(
                { is_confirmed: true, token_usuario: null },
             { where: { token_usuario: token_usuario } }
-        );
+        )
         res.json({
             msg: 'usuario confirmado'
         })
@@ -149,7 +157,7 @@ const olvidePassword = async (req, res) => {
         await Usuario.update(
                { token_usuario: generarTokenAleatorio() },
             { where: { email_usuario: req.body.email_usuario } }
-        );
+        )
         res.json({
             msg: 'Token generado'
         })
@@ -192,13 +200,13 @@ const restablecerPassword = async (req, res) => {
     // Revisamos el token y actualizamos contraseña
     try {
         // Hash de la nueva contraseña
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(req.body.nuevo_password, salt);
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(req.body.nuevo_password, salt)
 
         await Usuario.update(
             { token_usuario: null, password_usuario: hashedPassword },
             { where: { token_usuario: token_usuario } }
-        );
+        )
 
         res.json({
             msg: 'Contraseña restablecida'

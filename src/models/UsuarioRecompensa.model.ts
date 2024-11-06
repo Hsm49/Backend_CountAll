@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, PrimaryKey } from 'sequelize-typescript';
 import Usuario from './Usuario.model';
 import Recompensa from './Recompensa.model';
 
@@ -11,12 +11,14 @@ class UsuarioRecompensa extends Model {
     })
     fecha_obtencion: Date;
 
+    @PrimaryKey
     @ForeignKey(() => Usuario)
     @Column({
         type: DataType.INTEGER
     })
     id_usuario_fk_UR: number;
 
+    @PrimaryKey
     @ForeignKey(() => Recompensa)
     @Column({
         type: DataType.INTEGER

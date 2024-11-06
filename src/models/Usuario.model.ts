@@ -18,12 +18,26 @@ class Usuario extends Model {
     id_usuario: number;
 
     @Column({
+        type: DataType.STRING(256),
+    })
+    name_usuario: string;
+
+    @Column({
         type: DataType.STRING(256)
+    })
+    surname_usuario: string;
+
+    @Column({
+        type: DataType.STRING(256),
+        unique: true,
+        allowNull: false
     })
     nombre_usuario: string;
 
     @Column({
-        type: DataType.STRING(256)
+        type: DataType.STRING(256),
+        unique: true,
+        allowNull: false
     })
     email_usuario: string;
 

@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, Default } from 'sequelize-typescript';
 import Etapa from './Etapa.model';
 
 @Table({
@@ -22,16 +22,19 @@ class Tarea extends Model {
     })
     descr_tarea: string;
 
+    @Default(DataType.NOW)
     @Column({
         type: DataType.DATE
     })
     fecha_inicio_tarea: Date;
 
+    @Default(DataType.NOW)
     @Column({
         type: DataType.DATE
     })
     fecha_fin_tarea: Date;
 
+    @Default('En espera')
     @Column({
         type: DataType.STRING(256)
     })

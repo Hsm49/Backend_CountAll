@@ -16,7 +16,9 @@ class Proyecto extends Model {
     id_proyecto: number;
 
     @Column({
-        type: DataType.STRING(256)
+        type: DataType.STRING(256),
+        unique: true,
+        allowNull: false
     })
     nombre_proyecto: string;
 
@@ -42,6 +44,18 @@ class Proyecto extends Model {
         type: DataType.STRING(256)
     })
     estado_proyecto: string;
+
+    @Default('Scrum')
+    @Column({
+        type: DataType.STRING(256)
+    })
+    metodologia_proyecto: string;
+
+    @Default(5)
+    @Column({
+        type: DataType.INTEGER
+    })
+    numero_etapas_proyecto: number;
 
     @ForeignKey(() => Usuario)
     @Column({

@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, PrimaryKey } from 'sequelize-typescript';
 import Usuario from './Usuario.model';
 import Equipo from './Equipo.model';
 
@@ -21,12 +21,14 @@ class Clasificacion extends Model {
     })
     fecha_fin_clas: Date;
 
+    @PrimaryKey
     @ForeignKey(() => Usuario)
     @Column({
         type: DataType.INTEGER
     })
     id_usuario_fk_clas: number;
 
+    @PrimaryKey
     @ForeignKey(() => Equipo)
     @Column({
         type: DataType.INTEGER

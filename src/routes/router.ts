@@ -17,6 +17,15 @@ import {
     crearProyecto,
     proporcionarDetalles
 } from '../handlers/proyecto'
+/* Funciones de Equipo */
+import { 
+    verEquipos,
+    verEquipo,
+    crearEquipo,
+    asignarRoles,
+    agregarMiembro,
+    eliminarMiembro
+ } from '../handlers/equipo'
 
 const router = Router()
 
@@ -36,5 +45,15 @@ router.get('/proyecto/misProyectos/:nombre_proyecto', checkAuth, verProyecto)
 // Creación del proyecto
 router.post('/proyecto/crearProyecto', checkAuth, crearProyecto)
 router.post('/proyecto/crearProyecto/:nombre_proyecto', checkAuth, proporcionarDetalles)
+
+/* Equipo */
+// Crear y gestionar equipo
+router.post('/equipo/crearEquipo', checkAuth, crearEquipo)
+router.put('/equipo/misEquipos/:nombre_equipo/asignarRoles', checkAuth, asignarRoles)
+router.put('/equipo/misEquipos/:nombre_equipo/agregarMiembro', checkAuth, agregarMiembro)
+router.delete('/equipo/misEquipos/:nombre_equipo/eliminarMiembro', checkAuth, eliminarMiembro)
+/* Ver equipos */
+router.get('/equipo/misEquipos', checkAuth, verEquipos)
+router.get('/equipo/misEquipos/:nombre_equipo', checkAuth, verEquipo)
 
 export default router
