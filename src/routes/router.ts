@@ -22,6 +22,7 @@ import {
     verEquipos,
     verEquipo,
     crearEquipo,
+    aceptarInvitacion,
     asignarRoles,
     agregarMiembro,
     eliminarMiembro
@@ -49,6 +50,7 @@ router.post('/proyecto/crearProyecto/:nombre_proyecto', checkAuth, proporcionarD
 /* Equipo */
 // Crear y gestionar equipo
 router.post('/equipo/crearEquipo', checkAuth, crearEquipo)
+router.get('equipo/aceptarInvitacion/:token_UE', checkAuth, aceptarInvitacion)
 router.put('/equipo/misEquipos/:nombre_equipo/asignarRoles', checkAuth, asignarRoles)
 router.put('/equipo/misEquipos/:nombre_equipo/agregarMiembro', checkAuth, agregarMiembro)
 router.delete('/equipo/misEquipos/:nombre_equipo/eliminarMiembro', checkAuth, eliminarMiembro)

@@ -1,0 +1,26 @@
+----- COMMIT    06/11/2024 -----
+--- HANDLERS ---
+- equipo.ts -
+VerEquipo ahora sólo muestra a los usuarios confirmados    --UNTESTED
+crearEquipo manda un token de confirmación por correo    --UNTESTED
+Se ha creado la función aceptarInvitiacion    --UNTESTED
+asignarRoles ahora envía un correo personalizado    --UNTESTED
+agregarMiembro ahora envía el mismo correo que crearEquipo    --UNTESTED
+eliminarMiembro ahora envía un correo personalizado    --UNTESTED
+
+--- HELPERS ---
+- emails.ts -
+Se ha modificado el email emailEquipos para confirmar invitaciones    --UNTESTED
+Se ha agregado el email emailEquipoRolModificado    --UNTESTED
+Se ha agregado el email emailEquipoMiembroEliminado    --UNTESTED
+
+--- MODELS ---
+Se ha actualizado el modelo Usuario para vincularlo con los modelos UsuarioTarea y PaginaBloqueada    --TESTED
+Se ha vinculado el modelo Tarea con UsuarioTarea    --TESTED
+Se ha agregado el campo grado_bloqueo en el modelo PaginaBloqueada    --TESTED
+Se ha creado el modelo Riesgo y se ha vinculado con Proyecto    --TESTED
+Se ha eliminado el modelo Clasificación y se migraron sus campos al modelo UsuarioEquipo    --TESTED
+Se ha creado el campo token_UE e is_confirmed_UE en el modelo UsuarioEquipo    --TESTED
+
+--- ROUTES ---
+Se ha agregado la ruta «equipo/aceptarInvitacion/:token_UE»    --UNTESTED

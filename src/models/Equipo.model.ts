@@ -1,6 +1,5 @@
 import { Table, Column, Model, DataType, HasMany, BelongsToMany } from 'sequelize-typescript';
 import UsuarioEquipo from './UsuarioEquipo.model';
-import Clasificacion from './Clasificacion.model';
 import Proyecto from './Proyecto.model';
 import EquipoProyecto from './EquipoProyecto.model';
 
@@ -27,9 +26,6 @@ class Equipo extends Model {
 
     @HasMany(() => UsuarioEquipo)
     usuarioEquipos: UsuarioEquipo[];
-
-    @HasMany(() => Clasificacion)
-    clasificaciones: Clasificacion[];
 
     @BelongsToMany(() => Proyecto, () => EquipoProyecto)
     proyectos: Proyecto[];

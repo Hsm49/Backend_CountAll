@@ -1,5 +1,6 @@
-import { Table, Column, Model, DataType, ForeignKey, Default } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, Default, HasMany } from 'sequelize-typescript';
 import Etapa from './Etapa.model';
+import UsuarioTarea from './UsuarioTarea.model';
 
 @Table({
     tableName: 'tarea'
@@ -45,6 +46,9 @@ class Tarea extends Model {
         type: DataType.INTEGER
     })
     id_etapa_fk_tarea: number;
+
+    @HasMany(() => UsuarioTarea)
+    usuarioTareas: UsuarioTarea[];
 }
 
 export default Tarea;

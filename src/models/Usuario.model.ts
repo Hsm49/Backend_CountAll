@@ -3,8 +3,8 @@ import { generarTokenAleatorio } from '../helpers/functions'
 import UsuarioEquipo from './UsuarioEquipo.model';
 import UsuarioTarea from './UsuarioTarea.model';
 import UsuarioRecompensa from './UsuarioRecompensa.model';
-import Clasificacion from './Clasificacion.model';
 import Proyecto from './Proyecto.model';
+import PaginaBloqueada from './PaginaBloqueada.model';
 
 @Table({
     tableName: 'usuario'
@@ -73,8 +73,8 @@ class Usuario extends Model {
     @HasMany(() => UsuarioRecompensa)
     usuarioRecompensas: UsuarioRecompensa[];
 
-    @HasMany(() => Clasificacion)
-    clasificaciones: Clasificacion[];
+    @HasMany(() => PaginaBloqueada)
+    PaginaBloqueadas: PaginaBloqueada[];
 
     @HasMany(() => Proyecto)
     proyectos: Proyecto[];

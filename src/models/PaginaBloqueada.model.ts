@@ -1,4 +1,4 @@
-import { Table, Column, Model, ForeignKey, DataType, PrimaryKey } from 'sequelize-typescript';
+import { Table, Column, Model, ForeignKey, DataType, PrimaryKey, Default } from 'sequelize-typescript';
 import Usuario from './Usuario.model';
 import PaginaWeb from './PaginaWeb.model';
 
@@ -6,6 +6,12 @@ import PaginaWeb from './PaginaWeb.model';
     tableName: 'pagina_bloqueada'
 })
 class PaginaBloqueada extends Model {
+    @Default(0)
+    @Column({
+        type: DataType.INTEGER
+    })
+    grado_bloqueo: number
+
     @PrimaryKey
     @ForeignKey(() => Usuario)
     @Column({

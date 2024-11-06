@@ -123,7 +123,7 @@ const confirmarUsuario = async (req, res) => {
     // Confirmamos al usuario
     try {
         await Usuario.update(
-               { is_confirmed: true, token_usuario: null },
+                { is_confirmed: true, token_usuario: null },
             { where: { token_usuario: token_usuario } }
         )
         res.json({

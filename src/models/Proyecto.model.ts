@@ -3,6 +3,7 @@ import Etapa from './Etapa.model';
 import Equipo from './Equipo.model';
 import EquipoProyecto from './EquipoProyecto.model';
 import Usuario from './Usuario.model';
+import Riesgo from './Riesgo.model';
 
 @Table({
     tableName: 'proyecto'
@@ -65,6 +66,9 @@ class Proyecto extends Model {
 
     @HasMany(() => Etapa)
     etapas: Etapa[];
+
+    @HasMany(() => Riesgo)
+    riesgos: Riesgo[];
 
     @BelongsToMany(() => Equipo, () => EquipoProyecto)
     equipos: Equipo[];

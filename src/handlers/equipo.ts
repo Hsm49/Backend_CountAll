@@ -1,5 +1,9 @@
 import { check, validationResult } from 'express-validator'
-import { emailEquipos } from '../helpers/emails'
+import {
+    emailEquipos,
+    emailEquipoRolModificado,
+    emailEquipoMiembroEliminado
+} from '../helpers/emails'
 import Equipo from '../models/Equipo.model'
 import Proyecto from '../models/Proyecto.model'
 import Usuario from '../models/Usuario.model'
@@ -69,7 +73,7 @@ const verEquipo = async (req, res) => {
 
         // Encontramos usuarios y roles relacionados con el equipo
         let usuariosRoles = await UsuarioEquipo.findAll({
-            where: { id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo },
+            where: { id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo, is_confirmed_UE: true },
             attributes: ['id_usuario_fk_UE', 'rol']
         })
         // Encontramos los nombres de los usuarios
@@ -185,7 +189,7 @@ const crearEquipo = async (req, res) => {
             id_usuario_fk_UE: usuario.dataValues.id_usuario,
             id_equipo_fk_UE: equipoCreado.dataValues.id_equipo
         }
-        await UsuarioEquipo.create(usuarioEquipoData)
+        const UE = await UsuarioEquipo.create(usuarioEquipoData)
         for (const usuario of usuarios.slice(1)) {
             usuarioEquipoData = {
                 id_usuario_fk_UE: usuario.dataValues.id_usuario,
@@ -206,7 +210,8 @@ const crearEquipo = async (req, res) => {
                     nombre_lider: nombre_lider,
                     email_lider: email_lider,
                     nombre_equipo: equipoCreado.dataValues.nombre_equipo, 
-                    nombre_proyecto: proyectoEncontrado.dataValues.nombre_proyecto
+                    nombre_proyecto: proyectoEncontrado.dataValues.nombre_proyecto,
+                    token_UE: UE.dataValues.token_UE
                 });
             } catch (error) {
                 res.status(500).json({ error: 'Hubo un error al enviar el correo de integración de los equipos' })
@@ -216,6 +221,32 @@ const crearEquipo = async (req, res) => {
         // Enviamos respuesta exitosa
         res.json({
             msg: 'Se ha creado el equipo y notificado a los miembros'
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: 'Error al crear equipo' })
+    }
+}
+
+const aceptarInvitacion = async (req, res) => {
+    // Verificamos una sesión iniciada
+    const usuario = req.usuario
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
+    }
+
+    // Recuperamos el token desde la URL
+    const { token_UE } = req.params
+
+    // Buscamos al usuario con el token para aceptarlo en el equipo
+    try {
+        await UsuarioEquipo.update(
+                { is_confirmed_UE: true, token_UE: null },
+            { where: { token_UE: token_UE } }
+        )
+        // Enviamos respuesta exitosa
+        res.json({
+            msg: 'Ha confirmado la invitación al equipo'
         })
     } catch (error) {
         console.log(error)
@@ -261,12 +292,30 @@ const asignarRoles = async (req, res) => {
         if (!existeEnEquipo) {
             return res.status(500).json({ error: 'Este usuario no está en el equipo' })
         }
+        if (!existeEnEquipo.dataValues.is_confirmed_UE) {
+            return res.status(500).json({ error: 'Este usuario aún no acepta la invitación al equipo' })
+        }
 
         // Modificamos el rol del integrante
         await UsuarioEquipo.update(
             { rol: req.body.rol },
             { where: { id_usuario_fk_UE: existeEnEquipo.dataValues.id_usuario_fk_UE, id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo } }
         )
+
+        // Se notifica al usuario
+        const email_lider = req.usuario.dataValues.email_usuario
+        try {
+            // Envío del correo de confirmación
+            await emailEquipoRolModificado({
+                email_usuario: usuarioEncontrado.dataValues.email_usuario,
+                nombre_integrante: usuarioEncontrado.dataValues.nombre_usuario,
+                email_lider: email_lider,
+                nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
+                rol: existeEnEquipo.dataValues.rol
+            });
+        } catch (error) {
+            res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación de cambio de rol' })
+        }
 
         // Enviamos respuesta exitosa
         res.json({
@@ -325,10 +374,39 @@ const agregarMiembro = async (req, res) => {
         }
 
         // Añadimos el usuario al equipo
-        await UsuarioEquipo.create({
+        const UE = await UsuarioEquipo.create({
             id_usuario_fk_UE: usuarioEncontrado.dataValues.id_usuario,
             id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo
         })
+
+        // Notificamos al usuario
+        const nombre_lider = req.usuario.dataValues.nombre_usuario
+        const email_lider = req.usuario.dataValues.email_usuario
+        const EP = await EquipoProyecto.findOne({
+            where: { id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo },
+            attributes: ['id_proyecto_fk_clas']
+        })
+        const proyectoEncontrado = await Proyecto.findOne({
+            where: { id_proyecto: EP.dataValues.id_proyecto_fk_clas },
+            attributes: ['id_proyecto', 'nombre_proyecto']
+        })
+        if (!proyectoEncontrado) {
+            return res.status(404).json({ error: 'Proyecto no encontrado' })
+        }
+        try {
+            // Envío del correo de confirmación
+            await emailEquipos({
+                email_usuario: usuario.dataValues.email_usuario,
+                nombre_integrante: usuario.dataValues.nombre_usuario,
+                nombre_lider: nombre_lider,
+                email_lider: email_lider,
+                nombre_equipo: equipoEncontrado.dataValues.nombre_equipo, 
+                nombre_proyecto: proyectoEncontrado.dataValues.nombre_proyecto,
+                token_UE: UE.dataValues.token_UE
+            });
+        } catch (error) {
+            res.status(500).json({ error: 'Hubo un error al enviar el correo de integración de los equipos' })
+        }
 
         res.json({ msg: 'El miembro ha sido agregado al equipo' })
     } catch (error) {
@@ -392,6 +470,20 @@ const eliminarMiembro = async (req, res) => {
             }
         })
 
+        // Se notifica al usuario
+        const email_lider = req.usuario.dataValues.email_usuario
+        try {
+            // Envío del correo de confirmación
+            await emailEquipoMiembroEliminado({
+                email_usuario: usuarioEncontrado.dataValues.email_usuario,
+                nombre_integrante: usuarioEncontrado.dataValues.nombre_usuario,
+                email_lider: email_lider,
+                nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
+            });
+        } catch (error) {
+            res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación de eliminación' })
+        }
+
         res.json({ msg: 'El miembro ha sido eliminado del equipo' })
     } catch (error) {
         console.log(error)
@@ -404,6 +496,7 @@ export {
     verEquipos,
     verEquipo,
     crearEquipo,
+    aceptarInvitacion,
     asignarRoles,
     agregarMiembro,
     eliminarMiembro
