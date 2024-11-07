@@ -8,7 +8,8 @@ import {
     confirmarUsuario,
     olvidePassword,
     comprobarToken,
-    restablecerPassword
+    restablecerPassword,
+    reenviarCorreoConfirmacion
  } from '../handlers/usuario'
  /* Funciones de Proyecto */
  import { 
@@ -32,6 +33,7 @@ router.get('/usuario/confirmarUsuario/:token_usuario', confirmarUsuario);
 router.post('/usuario/olvidePassword', olvidePassword)
 router.get('/usuario/comprobarToken/:token_usuario', comprobarToken)
 router.post('/usuario/reestablecerPassword/:token_usuario', restablecerPassword)
+router.post('/usuario/reenviarCorreoConfirmacion', reenviarCorreoConfirmacion);
 
 /* Proyecto */
 // Visualizar proyectos

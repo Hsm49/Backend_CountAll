@@ -59,6 +59,34 @@ const registrarUsuario = async (req, res) => {
     }
 }
 
+const reenviarCorreoConfirmacion = async (req, res) => {
+    const { email_usuario } = req.body;
+
+    // Verificar si el correo electrónico existe
+    const existingUser = await Usuario.findOne({ where: { email_usuario } });
+    if (!existingUser) {
+        return res.status(400).json({ errors: [{ msg: 'El usuario no existe' }] });
+    }
+
+    // Verificar si el usuario ya está confirmado
+    if (existingUser.dataValues.is_confirmed) {
+        return res.status(400).json({ errors: [{ msg: 'El usuario ya está confirmado' }] });
+    }
+
+    try {
+        // Envío del correo de confirmación
+        await emailRegistro({
+            email_usuario: existingUser.dataValues.email_usuario,
+            nombre_usuario: existingUser.dataValues.nombre_usuario,
+            token_usuario: existingUser.dataValues.token_usuario
+        });
+
+        res.json({ msg: 'El correo de confirmación ha sido reenviado' });
+    } catch (error) {
+        res.status(500).json({ error: 'Hubo un error al enviar el correo de confirmación' });
+    }
+};
+
 const iniciarSesion = async (req, res) => {
     // Validación de la integridad de los datos
     await check('email_usuario').notEmpty().withMessage('Correo electrónico vacío').isEmail().withMessage('Correo electrónico no válido').run(req)
@@ -216,5 +244,6 @@ export {
     confirmarUsuario,
     olvidePassword,
     comprobarToken,
-    restablecerPassword
+    restablecerPassword,
+    reenviarCorreoConfirmacion
  }
