@@ -46,6 +46,12 @@ class Usuario extends Model {
     })
     password_usuario: string;
 
+    @Default('')
+    @Column({
+        type: DataType.STRING(256)
+    })
+    numero_telefonico: string;
+
     @Default(generarTokenAleatorio)
     @Column({
         type: DataType.STRING(10)

@@ -8,7 +8,9 @@ import {
     confirmarUsuario,
     olvidePassword,
     comprobarToken,
-    restablecerPassword
+    restablecerPassword,
+    verPerfil,
+    modificarDatos
  } from '../handlers/usuario'
  /* Funciones de Proyecto */
  import { 
@@ -38,6 +40,9 @@ router.get('/usuario/confirmarUsuario/:token_usuario', confirmarUsuario);
 router.post('/usuario/olvidePassword', olvidePassword)
 router.get('/usuario/comprobarToken/:token_usuario', comprobarToken)
 router.post('/usuario/reestablecerPassword/:token_usuario', restablecerPassword)
+// Ver y modificar información
+router.get('/usuario/verPerfil', checkAuth, verPerfil)
+router.post('/usuario/modificarDatos', checkAuth, modificarDatos)
 
 /* Proyecto */
 // Visualizar proyectos
@@ -50,7 +55,7 @@ router.post('/proyecto/crearProyecto/:nombre_proyecto', checkAuth, proporcionarD
 /* Equipo */
 // Crear y gestionar equipo
 router.post('/equipo/crearEquipo', checkAuth, crearEquipo)
-router.get('equipo/aceptarInvitacion/:token_UE', checkAuth, aceptarInvitacion)
+router.get('/equipo/aceptarInvitacion/:token_UE', aceptarInvitacion)
 router.put('/equipo/misEquipos/:nombre_equipo/asignarRoles', checkAuth, asignarRoles)
 router.put('/equipo/misEquipos/:nombre_equipo/agregarMiembro', checkAuth, agregarMiembro)
 router.delete('/equipo/misEquipos/:nombre_equipo/eliminarMiembro', checkAuth, eliminarMiembro)

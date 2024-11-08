@@ -12,8 +12,8 @@ import { emailRegistro } from '../helpers/emails'
 const registrarUsuario = async (req, res) => {
     // Validación de la integridad de los datos
     await check('name_usuario').notEmpty().withMessage('Nombre de usuario vacío').run(req)
-    await check('surname_usuario').notEmpty().withMessage('Nombre de usuario vacío').run(req)
-    await check('nombre_usuario').notEmpty().withMessage('Nombre de usuario vacío').matches(/^[a-zA-Z0-9]+$/).withMessage('El nombre de usuario solo puede contener letras y números').run(req)
+    await check('surname_usuario').notEmpty().withMessage('Apellido de usuario vacío').run(req)
+    await check('nombre_usuario').notEmpty().withMessage('Username vacío').matches(/^[a-zA-Z0-9]+$/).withMessage('El nombre de usuario solo puede contener letras y números').run(req)
     await check('email_usuario').notEmpty().withMessage('Correo electrónico vacío').isEmail().withMessage('Correo electrónico no válido').run(req)
     await check('password_usuario').notEmpty().withMessage('Contraseña vacía').run(req)
 
@@ -218,11 +218,91 @@ const restablecerPassword = async (req, res) => {
     }
 }
 
+const verPerfil = async (req, res) => {
+    // Verificamos una sesión iniciada
+    const usuario = req.usuario
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
+    }
+
+    // Mostramos la información del usuario
+    try {
+        const info_usuario = {
+            id_usuario: usuario.dataValues.id_usuario,
+            name_usuario: usuario.dataValues.name_usuario,
+            surname_usuario: usuario.dataValues.surname_usuario,
+            username_usuario: usuario.dataValues.nombre_usuario,
+            email_usuario: usuario.dataValues.email_usuario,
+            numero_telefonico: usuario.dataValues.numero_telefonico,
+            puntuacion_global: usuario.dataValues.puntuacion_global
+        }
+        // Enviamos la información como respuesta
+        res.json({
+            info_usuario: info_usuario
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            msg: 'Error al mostrar información del usuario'
+        })
+    }
+}
+
+const modificarDatos = async (req, res) => {
+    // Verificamos una sesión iniciada
+    const usuario = req.usuario
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
+    }
+
+    // Validación de la integridad de los datos
+    await check('name_usuario').notEmpty().withMessage('Nombre de usuario vacío').run(req)
+    await check('surname_usuario').notEmpty().withMessage('Apellido de usuario vacío').run(req)
+    await check('nombre_usuario').notEmpty().withMessage('Username de usuario vacío').matches(/^[a-zA-Z0-9]+$/).withMessage('El nombre de usuario solo puede contener letras y números').run(req)
+    await check('numero_telefonico').notEmpty().withMessage('Número telefónico vacío').run(req)
+
+    // Manejo de errores
+    let errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
+
+    // Buscamos que el Username no se repita
+    const existingUser = await Usuario.findOne({ where: { nombre_usuario: req.body.nombre_usuario } })
+    if (existingUser) {
+        return res.status(400).json({ errors: [{ msg: 'Este username ya se encuentra en uso' }] })
+    }
+
+    // Modificamos la información del usuario
+    try {
+        await Usuario.update(
+            {
+                name_usuario: req.body.name_usuario,
+                surname_usuario: req.body.surname_usuario,
+                nombre_usuario: req.body.nombre_usuario,
+                numero_telefonico: req.body.numero_telefonico,
+            },
+            { where: { id_usuario: usuario.dataValues.id_usuario } }
+        )
+        // Enviamos la información como respuesta
+        res.json({
+            msg: 'Se han modificado los datos'
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            msg: 'Error al modificar los datos del usuario'
+        })
+    }
+}
+
 export { 
     registrarUsuario,
     iniciarSesion,
     confirmarUsuario,
     olvidePassword,
     comprobarToken,
-    restablecerPassword
+    restablecerPassword,
+    verPerfil,
+    modificarDatos
  }

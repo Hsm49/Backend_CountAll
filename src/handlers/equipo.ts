@@ -87,7 +87,13 @@ const verEquipo = async (req, res) => {
         }
 
         // Conjuntamos la información de los usuarios
+        // Encontramos el rol del usuario (para ver qué información se muestra en el Front)
+        const sesionUsuario = await UsuarioEquipo.findOne({
+            where: { id_usuario_fk_UE: req.usuario.dataValues.id_usuario, id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo, is_confirmed_UE: true },
+            attributes: ['id_usuario_fk_UE', 'rol']
+        })
         let infoEquipo = {
+            rol_sesion: sesionUsuario.dataValues.rol,
             id_equipo: equipoEncontrado.dataValues.id_equipo,
             nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
             descr_equipo: equipoEncontrado.dataValues.descr_equipo,
@@ -133,7 +139,6 @@ const crearEquipo = async (req, res) => {
         return res.status(400).json({ errors: errors.array() })
     }
 
-    // Creamos el equipo
     try {
         // Obtenemos el Id del proyecto
         const proyectoEncontrado = await Proyecto.findOne({
@@ -147,14 +152,13 @@ const crearEquipo = async (req, res) => {
 
         // Obtenemos Id's & emails de todos los usuarios
         let usuarios = []
-        // Del usuario creador del equipo
         const nombre = usuario.dataValues.nombre_usuario
         const usuarioEncontrado = await Usuario.findOne({
             where: { nombre_usuario: nombre },
             attributes: ['id_usuario', 'nombre_usuario', 'email_usuario']
         })
         usuarios.push(usuarioEncontrado)
-        // De los demás usuarios
+
         for (const nombre_usuario of req.body.usuarios) {
             const usuarioEncontrado = await Usuario.findOne({
                 where: { nombre_usuario },
@@ -173,7 +177,7 @@ const crearEquipo = async (req, res) => {
             descr_equipo: req.body.descr_equipo,
         }
         const equipoCreado = await Equipo.create(equipoData)
-        
+
         // Estructura y creación de los campos en la tabla EquipoProyecto
         const equipoProyectoData = {
             id_equipo_fk_clas: equipoCreado.dataValues.id_equipo,
@@ -181,40 +185,33 @@ const crearEquipo = async (req, res) => {
         }
         await EquipoProyecto.create(equipoProyectoData)
 
-        // Estructura y creación de los campos en la tabla UsuarioEquipo
-        let usuarioEquipoData = {}
-        // Definimos al creador del equipo como líder
-        usuarioEquipoData = {
-            rol: 'Líder',
-            id_usuario_fk_UE: usuario.dataValues.id_usuario,
-            id_equipo_fk_UE: equipoCreado.dataValues.id_equipo
-        }
-        const UE = await UsuarioEquipo.create(usuarioEquipoData)
-        for (const usuario of usuarios.slice(1)) {
-            usuarioEquipoData = {
+        // Definimos el rol de los usuarios en el equipo
+        const nombre_lider = usuario.dataValues.nombre_usuario
+        const email_lider = usuario.dataValues.email_usuario
+
+        for (const [index, usuario] of usuarios.entries()) {
+            const usuarioEquipoData = {
+                rol: index === 0 ? 'Líder' : 'Miembro',  // Solo el primer usuario en la lista es el líder
                 id_usuario_fk_UE: usuario.dataValues.id_usuario,
                 id_equipo_fk_UE: equipoCreado.dataValues.id_equipo
             }
-            await UsuarioEquipo.create(usuarioEquipoData)
-        }
+            const usuarioEquipo = await UsuarioEquipo.create(usuarioEquipoData)
 
-        // Enviamos un correo a los usuarios restantes
-        const nombre_lider = req.usuario.dataValues.nombre_usuario
-        const email_lider = req.usuario.dataValues.email_usuario
-        for (const usuario of usuarios.slice(1)) {
-            try {
-                // Envío del correo de confirmación
-                await emailEquipos({
-                    email_usuario: usuario.dataValues.email_usuario,
-                    nombre_integrante: usuario.dataValues.nombre_usuario,
-                    nombre_lider: nombre_lider,
-                    email_lider: email_lider,
-                    nombre_equipo: equipoCreado.dataValues.nombre_equipo, 
-                    nombre_proyecto: proyectoEncontrado.dataValues.nombre_proyecto,
-                    token_UE: UE.dataValues.token_UE
-                });
-            } catch (error) {
-                res.status(500).json({ error: 'Hubo un error al enviar el correo de integración de los equipos' })
+            // Envío del correo de confirmación solo a los miembros
+            if (usuarioEquipoData.rol === 'Miembro') {
+                try {
+                    await emailEquipos({
+                        email_usuario: usuario.dataValues.email_usuario,
+                        nombre_integrante: usuario.dataValues.nombre_usuario,
+                        nombre_lider: nombre_lider,
+                        email_lider: email_lider,
+                        nombre_equipo: equipoCreado.dataValues.nombre_equipo, 
+                        nombre_proyecto: proyectoEncontrado.dataValues.nombre_proyecto,
+                        token_UE: usuarioEquipo.dataValues.token_UE
+                    })
+                } catch (error) {
+                    return res.status(500).json({ error: 'Hubo un error al enviar el correo de integración de los equipos' })
+                }
             }
         }
 
@@ -229,12 +226,6 @@ const crearEquipo = async (req, res) => {
 }
 
 const aceptarInvitacion = async (req, res) => {
-    // Verificamos una sesión iniciada
-    const usuario = req.usuario
-    if (!usuario) {
-        return res.status(500).json({ error: 'No hay sesión iniciada' })
-    }
-
     // Recuperamos el token desde la URL
     const { token_UE } = req.params
 
@@ -287,8 +278,9 @@ const asignarRoles = async (req, res) => {
         }
         const existeEnEquipo = await UsuarioEquipo.findOne({
             where: { id_usuario_fk_UE: usuarioEncontrado.dataValues.id_usuario },
-            attributes: ['id_usuario_fk_UE', 'rol']
+            attributes: ['id_usuario_fk_UE', 'rol', 'is_confirmed_UE']
         })
+        console.log(existeEnEquipo)
         if (!existeEnEquipo) {
             return res.status(500).json({ error: 'Este usuario no está en el equipo' })
         }
@@ -311,8 +303,8 @@ const asignarRoles = async (req, res) => {
                 nombre_integrante: usuarioEncontrado.dataValues.nombre_usuario,
                 email_lider: email_lider,
                 nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
-                rol: existeEnEquipo.dataValues.rol
-            });
+                rol: req.body.rol
+            })
         } catch (error) {
             res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación de cambio de rol' })
         }
@@ -383,7 +375,7 @@ const agregarMiembro = async (req, res) => {
         const nombre_lider = req.usuario.dataValues.nombre_usuario
         const email_lider = req.usuario.dataValues.email_usuario
         const EP = await EquipoProyecto.findOne({
-            where: { id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo },
+            where: { id_equipo_fk_clas: equipoEncontrado.dataValues.id_equipo },
             attributes: ['id_proyecto_fk_clas']
         })
         const proyectoEncontrado = await Proyecto.findOne({
@@ -396,14 +388,14 @@ const agregarMiembro = async (req, res) => {
         try {
             // Envío del correo de confirmación
             await emailEquipos({
-                email_usuario: usuario.dataValues.email_usuario,
-                nombre_integrante: usuario.dataValues.nombre_usuario,
+                email_usuario: usuarioEncontrado.dataValues.email_usuario,
+                nombre_integrante: usuarioEncontrado.dataValues.nombre_usuario,
                 nombre_lider: nombre_lider,
                 email_lider: email_lider,
                 nombre_equipo: equipoEncontrado.dataValues.nombre_equipo, 
                 nombre_proyecto: proyectoEncontrado.dataValues.nombre_proyecto,
                 token_UE: UE.dataValues.token_UE
-            });
+            })
         } catch (error) {
             res.status(500).json({ error: 'Hubo un error al enviar el correo de integración de los equipos' })
         }
@@ -414,7 +406,6 @@ const agregarMiembro = async (req, res) => {
         res.status(500).json({ error: 'Error al agregar el miembro al equipo' })
     }
 }
-
 
 const eliminarMiembro = async (req, res) => {
     // Verificamos una sesión iniciada
@@ -445,7 +436,7 @@ const eliminarMiembro = async (req, res) => {
         // Encontramos al usuario
         const usuarioEncontrado = await Usuario.findOne({
             where: { nombre_usuario: req.body.nombre_usuario },
-            attributes: ['id_usuario', 'nombre_usuario']
+            attributes: ['id_usuario', 'nombre_usuario', 'email_usuario']
         })
         if (!usuarioEncontrado) {
             return res.status(404).json({ error: 'Usuario no encontrado' })
@@ -472,6 +463,8 @@ const eliminarMiembro = async (req, res) => {
 
         // Se notifica al usuario
         const email_lider = req.usuario.dataValues.email_usuario
+        console.log(usuarioEncontrado.dataValues.nombre_usuario)
+        console.log(usuarioEncontrado.dataValues.email_usuario)
         try {
             // Envío del correo de confirmación
             await emailEquipoMiembroEliminado({
@@ -479,7 +472,7 @@ const eliminarMiembro = async (req, res) => {
                 nombre_integrante: usuarioEncontrado.dataValues.nombre_usuario,
                 email_lider: email_lider,
                 nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
-            });
+            })
         } catch (error) {
             res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación de eliminación' })
         }

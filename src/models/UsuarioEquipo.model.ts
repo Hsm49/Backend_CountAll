@@ -19,7 +19,7 @@ class UsuarioEquipo extends Model {
     })
     fecha_integracion_UE: Date;
 
-    @Default('Sin definir')
+    @Default('Miembro')
     @Column({
         type: DataType.STRING(256)
     })
