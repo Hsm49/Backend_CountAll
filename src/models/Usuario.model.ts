@@ -46,7 +46,7 @@ class Usuario extends Model {
     })
     password_usuario: string;
 
-    @Default('')
+    @Default('Sin número telefónico')
     @Column({
         type: DataType.STRING(256)
     })

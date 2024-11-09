@@ -1,18 +1,18 @@
 ----- COMMIT    06/11/2024 -----
 --- HANDLERS ---
 - equipo.ts -
-VerEquipo ahora sólo muestra a los usuarios confirmados    --UNTESTED
-crearEquipo manda un token de confirmación por correo    --UNTESTED
-Se ha creado la función aceptarInvitiacion    --UNTESTED
-asignarRoles ahora envía un correo personalizado    --UNTESTED
-agregarMiembro ahora envía el mismo correo que crearEquipo    --UNTESTED
-eliminarMiembro ahora envía un correo personalizado    --UNTESTED
+VerEquipo ahora sólo muestra a los usuarios confirmados    --TESTED
+crearEquipo manda un token de confirmación por correo    --TESTED
+Se ha creado la función aceptarInvitiacion    --TESTED
+asignarRoles ahora envía un correo personalizado    --TESTED
+agregarMiembro ahora envía el mismo correo que crearEquipo    --TESTED
+eliminarMiembro ahora envía un correo personalizado    --TESTED
 
 --- HELPERS ---
 - emails.ts -
-Se ha modificado el email emailEquipos para confirmar invitaciones    --UNTESTED
-Se ha agregado el email emailEquipoRolModificado    --UNTESTED
-Se ha agregado el email emailEquipoMiembroEliminado    --UNTESTED
+Se ha modificado el email emailEquipos para confirmar invitaciones    --TESTED
+Se ha agregado el email emailEquipoRolModificado    --TESTED
+Se ha agregado el email emailEquipoMiembroEliminado    --TESTED
 
 --- MODELS ---
 Se ha actualizado el modelo Usuario para vincularlo con los modelos UsuarioTarea y PaginaBloqueada    --TESTED
@@ -23,4 +23,58 @@ Se ha eliminado el modelo Clasificación y se migraron sus campos al modelo Usua
 Se ha creado el campo token_UE e is_confirmed_UE en el modelo UsuarioEquipo    --TESTED
 
 --- ROUTES ---
-Se ha agregado la ruta «equipo/aceptarInvitacion/:token_UE»    --UNTESTED
+Se ha agregado la ruta «equipo/aceptarInvitacion/:token_UE»    --TESTED
+
+
+----- COMMIT    08/11/2024 -----
+--- HANDLERS ---
+- equipo.ts -
+VerEquipo ahora regresa el rol del usuario que manda a llamar la función    --TESTED
+- usuario.ts -
+Se ha creado la función verPerfil    --TESTED
+Se ha creado la función modificarDatos    --TESTED
+
+--- MODELS ---
+Se agregó el campo numero_telefono al modelo Usuario    --TESTED
+
+--- ROUTES ---
+Se ha agregado la ruta «/usuario/verPerfil»    --TESTED
+Se ha agregado la ruta «/usuario/modificarDatos»    --TESTED
+
+
+----- COMMIT    09/11/2024 -----
+--- HANDLERS ---
+- riesgo.ts -
+Se ha creado el Handler riesgo.ts    --TESTED
+Se ha agregado la función crearRiesgo    --TESTED
+Se ha agregado la funcíon modificarRiesgo    --TESTED
+Se ha agregado la funcíon eliminarRiesgo    --TESTED
+
+- paginaWeb.ts -
+Se ha creado el Handler paginaWeb.ts   --TESTED
+Se ha agregado la función verPaginasBloqueadas    --TESTED
+Se ha agregado la funcíon bloquearPagina    --TESTED
+Se ha agregado la funcíon desbloquearPagina    --TESTED
+Se ha agregado la funcíon bloquearPaginaEquipo    --TESTED
+Se ha agregado la funcíon desbloquearPaginaEquipo   --TESTED 
+
+- equipo.ts -
+Se ha corregido un error en la función crearEquipo que no confirmaba al creador del equipo    --TESTED
+Se ha actualizado la función verEquipo para mostrar correctamente las páginas bloqueadas asociadas a él    --TESTED
+
+- proyecto.ts -
+Se ha actualizado la función verProyecto para mostrar todos los riesgos asociados con el proyecto    --TESTED
+
+--- MODELS ---
+Se ha actualizado el campo numero_telefonico en el modelo Usuario para incluir un valor por defecto    --TESTED
+Se actualizado el nombre del campo grado_bloqueo a nivel_bloqueo en el modelo PaginaBloqueada    --TESTED
+
+--- ROUTES ---
+Se ha agregado la ruta «/riesgo/crearRiesgo/:nombre_proyecto»    --TESTED
+Se ha agregado la ruta «/riesgo/modificarRiesgo/:id_riesgo»    --TESTED
+Se ha agregado la ruta «/riesgo/eliminarRiesgo/:id_riesgo»    --TESTED
+Se ha agregado la ruta «/paginaWeb/verPaginasBloqueadas»    --TESTED
+Se ha agregado la ruta «/paginaWeb/bloquearPagina»    --TESTED
+Se ha agregado la ruta «/paginaWeb/desbloquearPagina/:id_pagina»    --TESTED
+Se ha agregado la ruta «/paginaWeb/bloquearPaginaEquipo/:id_equipo»    --TESTED
+Se ha agregado la ruta «/paginaWeb/desbloquearPaginaEquipo/:id_equipo/:id_pagina»    --TESTED

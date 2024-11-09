@@ -3,6 +3,7 @@ import Proyecto from '../models/Proyecto.model'
 import Usuario from '../models/Usuario.model'
 import Etapa from '../models/Etapa.model'
 import Tarea from '../models/Tarea.model'
+import Riesgo from '../models/Riesgo.model'
 
 const verProyectos = async(req, res) => {
     // Verificamos una sesión iniciada
@@ -50,10 +51,17 @@ const verProyecto = async (req, res) => {
             attributes: ['id_proyecto', 'nombre_proyecto', 'descr_proyecto', 'fecha_inicio_proyecto', 'fecha_fin_proyecto', 'metodologia_proyecto', 'estado_proyecto']
         })
 
+        // Obtenemos todos los riesgos asociados al proyecto
+        const riesgosProyecto = await Riesgo.findAll({
+            where: { id_riesgo_fk_proyecto: proyectoEncontrado.dataValues.id_proyecto },
+            attributes: ['id_riesgo', 'nombre_riesgo', 'descr_riesgo', 'prob_riesgo']
+        })
+
         // Verificamos que se haya encontrado un proyecto y lo enviamos de vuelta
         if (proyectoEncontrado) {
             res.json({
-                proyecto: proyectoEncontrado
+                proyecto: proyectoEncontrado,
+                riesgos_proyecto: riesgosProyecto
             })
         }
         else {

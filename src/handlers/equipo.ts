@@ -9,6 +9,8 @@ import Proyecto from '../models/Proyecto.model'
 import Usuario from '../models/Usuario.model'
 import EquipoProyecto from '../models/EquipoProyecto.model'
 import UsuarioEquipo from '../models/UsuarioEquipo.model'
+import PaginaBloqueada from '../models/PaginaBloqueada.model'
+import PaginaWeb from '../models/PaginaWeb.model'
 
 const verEquipos = async (req, res) => {
     // Verificamos una sesión iniciada
@@ -89,11 +91,10 @@ const verEquipo = async (req, res) => {
         // Conjuntamos la información de los usuarios
         // Encontramos el rol del usuario (para ver qué información se muestra en el Front)
         const sesionUsuario = await UsuarioEquipo.findOne({
-            where: { id_usuario_fk_UE: req.usuario.dataValues.id_usuario, id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo, is_confirmed_UE: true },
+            where: { id_usuario_fk_UE: usuario.dataValues.id_usuario, id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo, is_confirmed_UE: true },
             attributes: ['id_usuario_fk_UE', 'rol']
         })
         let infoEquipo = {
-            rol_sesion: sesionUsuario.dataValues.rol,
             id_equipo: equipoEncontrado.dataValues.id_equipo,
             nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
             descr_equipo: equipoEncontrado.dataValues.descr_equipo,
@@ -109,9 +110,31 @@ const verEquipo = async (req, res) => {
             infoEquipo.integrantes_equipo.push(integrante)
         }
 
+        // Buscamos las páginas bloqueadas
+        const paginasBloqueadasEquipo = await PaginaBloqueada.findAll({
+            where: { id_usuario_fk_bloqueo: usuario.dataValues.id_usuario, nivel_bloqueo: 1 }
+        })
+        const datosPaginas = []
+        if (paginasBloqueadasEquipo) {
+            for (const pagina of paginasBloqueadasEquipo) {
+                const datoPagina = await PaginaWeb.findOne({
+                    where: { id_pagina: pagina.dataValues.id_pagina_fk_bloqueo }
+                })
+                const datosPagina = {
+                    id_pagina: datoPagina.dataValues.id_pagina,
+                    nombre_pagina: datoPagina.dataValues.nombre_pagina,
+                    descr_pagina: datoPagina.dataValues.descr_pagina,
+                    url_pagina: datoPagina.dataValues.url_pagina
+                }
+                datosPaginas.push(datosPagina)
+            }
+        }
+
         // Enviamos la información del equipo como respuesta
         res.json({
-            equipo: infoEquipo
+            rol_sesion: sesionUsuario.dataValues.rol,
+            equipo: infoEquipo,
+            paginas_bloqueadas: datosPaginas
         })
 
     } catch (error) {
@@ -193,7 +216,8 @@ const crearEquipo = async (req, res) => {
             const usuarioEquipoData = {
                 rol: index === 0 ? 'Líder' : 'Miembro',  // Solo el primer usuario en la lista es el líder
                 id_usuario_fk_UE: usuario.dataValues.id_usuario,
-                id_equipo_fk_UE: equipoCreado.dataValues.id_equipo
+                id_equipo_fk_UE: equipoCreado.dataValues.id_equipo,
+                is_confirmed_UE: index === 0 ? true : false  // Confirma automáticamente al creador del equipo
             }
             const usuarioEquipo = await UsuarioEquipo.create(usuarioEquipoData)
 

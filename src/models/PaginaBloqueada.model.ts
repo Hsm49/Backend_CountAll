@@ -10,7 +10,7 @@ class PaginaBloqueada extends Model {
     @Column({
         type: DataType.INTEGER
     })
-    grado_bloqueo: number
+    nivel_bloqueo: number
 
     @PrimaryKey
     @ForeignKey(() => Usuario)
