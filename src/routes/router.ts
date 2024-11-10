@@ -10,7 +10,8 @@ import {
     comprobarToken,
     restablecerPassword,
     verPerfil,
-    modificarDatos
+    modificarDatos,
+    reenviarCorreoConfirmacion
 } from '../handlers/usuario'
  /* Funciones de Proyecto */
  import { 
@@ -19,6 +20,7 @@ import {
     crearProyecto,
     proporcionarDetalles
 } from '../handlers/proyecto'
+
 /* Funciones de Equipo */
 import { 
     verEquipos,
@@ -54,6 +56,7 @@ router.get('/usuario/confirmarUsuario/:token_usuario', confirmarUsuario);
 router.post('/usuario/olvidePassword', olvidePassword)
 router.get('/usuario/comprobarToken/:token_usuario', comprobarToken)
 router.post('/usuario/reestablecerPassword/:token_usuario', restablecerPassword)
+router.post('/usuario/reenviarCorreoConfirmacion', reenviarCorreoConfirmacion);
 // Ver y modificar información
 router.get('/usuario/verPerfil', checkAuth, verPerfil)
 router.post('/usuario/modificarDatos', checkAuth, modificarDatos)
@@ -88,5 +91,33 @@ router.post('/paginaWeb/bloquearPagina', checkAuth, bloquearPagina)
 router.delete('/paginaWeb/desbloquearPagina/:id_pagina', checkAuth, desbloquearPagina)
 router.post('/paginaWeb/bloquearPaginaEquipo/:id_equipo', checkAuth, bloquearPaginaEquipo)
 router.delete('/paginaWeb/desbloquearPaginaEquipo/:id_equipo/:id_pagina', checkAuth, desbloquearPaginaEquipo)
+
+/* Equipo */
+// Crear y gestionar equipo
+router.post('/equipo/crearEquipo', checkAuth, crearEquipo)
+router.get('/equipo/aceptarInvitacion/:token_UE', aceptarInvitacion)
+router.put('/equipo/misEquipos/:nombre_equipo/asignarRoles', checkAuth, asignarRoles)
+router.put('/equipo/misEquipos/:nombre_equipo/agregarMiembro', checkAuth, agregarMiembro)
+router.delete('/equipo/misEquipos/:nombre_equipo/eliminarMiembro', checkAuth, eliminarMiembro)
+// Ver equipos
+router.get('/equipo/misEquipos', checkAuth, verEquipos)
+router.get('/equipo/misEquipos/:nombre_equipo', checkAuth, verEquipo)
+
+/* Riesgo */
+router.post('/riesgo/crearRiesgo/:nombre_proyecto', checkAuth, crearRiesgo)
+router.put('/riesgo/modificarRiesgo/:id_riesgo', checkAuth, modificarRiesgo)
+router.delete('/riesgo/eliminarRiesgo/:id_riesgo', checkAuth, eliminarRiesgo)
+
+/* Página Web */
+router.get('/paginaWeb/verPaginasBloqueadas', checkAuth, verPaginasBloqueadas)
+router.post('/paginaWeb/bloquearPagina', checkAuth, bloquearPagina)
+router.delete('/paginaWeb/desbloquearPagina/:id_pagina', checkAuth, desbloquearPagina)
+router.post('/paginaWeb/bloquearPaginaEquipo/:id_equipo', checkAuth, bloquearPaginaEquipo)
+router.delete('/paginaWeb/desbloquearPaginaEquipo/:id_equipo/:id_pagina', checkAuth, desbloquearPaginaEquipo)
+
+/* Auth Check */
+router.get('/auth/check', checkAuth, (req, res) => {
+    res.status(200).json({ msg: 'Authenticated' });
+  });
 
 export default router
